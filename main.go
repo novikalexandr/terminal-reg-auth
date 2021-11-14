@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
+	"time"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -19,16 +20,16 @@ func login() error {
 
 	passwordBytes, err := os.ReadFile(insertedLogin + ".txt")
 	if err != nil {
-		return fmt.Errorf("Validation error")
+		return fmt.Errorf("validation error")
 	}
 	passwordFromFile := string(passwordBytes)
 	if insertedPassword != passwordFromFile {
-		return fmt.Errorf("Validation error: password unexist!")
+		return fmt.Errorf("validation error: password unexist")
 	}
 	return nil
 }
 
-func reg() error {
+func reg(db *sql.DB) error {
 	var login string
 	fmt.Printf("Add you login\n> ")
 	fmt.Scanf("%s\n", &login)
@@ -37,13 +38,19 @@ func reg() error {
 	fmt.Printf("Add you password\n> ")
 	fmt.Scanf("%s\n", &pass)
 
-	file, err := os.Create(login + ".txt")
+	_, err := db.Exec("insert into users (username, password, reg_time) values ($1, $2, $3)",
+		login, pass, time.Now())
 	if err != nil {
-		return fmt.Errorf("Unable to create file:")
+		panic(err)
 	}
 
-	defer file.Close()
-	file.WriteString(pass)
+	// file, err := os.Create(login + ".txt")
+	// if err != nil {
+	// 	return fmt.Errorf("Unable to create file:")
+	// }
+
+	// defer file.Close()
+	// file.WriteString(pass)
 
 	fmt.Printf("Hi, %s your registration complete\n", login)
 	return nil
@@ -73,7 +80,7 @@ func main() {
 
 	case "register":
 		for {
-			err := reg()
+			err := reg(db)
 			if err != nil {
 				fmt.Println(err)
 				continue
