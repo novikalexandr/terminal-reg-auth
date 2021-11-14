@@ -1,8 +1,11 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"os"
+
+	_ "github.com/mattn/go-sqlite3"
 )
 
 func login() error {
@@ -47,6 +50,13 @@ func reg() error {
 }
 
 func main() {
+	db, err := sql.Open("sqlite3", "database.db")
+	if err != nil {
+		fmt.Printf("error while connecting to DB: %s\n", err)
+		return
+	}
+	defer db.Close()
+
 	var choose string
 	fmt.Printf("Hi Men, do you want login or register?\n> ")
 	fmt.Scanf("%s\n", &choose)
