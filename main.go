@@ -42,7 +42,7 @@ func reg() error {
 	defer file.Close()
 	file.WriteString(pass)
 
-	fmt.Println("Done!)")
+	fmt.Printf("Hi, %s your registration complete\n", login)
 	return nil
 }
 
@@ -62,9 +62,12 @@ func main() {
 		}
 
 	case "register":
-		err := reg()
-		if err != nil {
-			fmt.Println(err)
+		for {
+			err := reg()
+			if err != nil {
+				fmt.Println(err)
+				continue
+			}
 			return
 		}
 	case "exit":
