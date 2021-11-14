@@ -14,24 +14,13 @@ func login() error {
 	fmt.Printf("Enter your password\n> ")
 	fmt.Scanf("%s\n", &insertedPassword)
 
-	// Мы пытаемся найти и открыть файл, название которого равно введенному пользователем логину.
-	loginFile, err := os.Open(insertedLogin + ".txt")
-	if err != nil { // если не удалось найти и открыть файл, который запрашивает user.
-		fmt.Println("Login unexist! Enter again.")
-		return login()
-	}
-	defer loginFile.Close()
-
-	// Читаем содержимое логин файла.
-	passwordBytes := []byte{}
-	_, err = loginFile.Read(passwordBytes)
+	passwordBytes, err := os.ReadFile(insertedLogin + ".txt")
 	if err != nil {
-		return fmt.Errorf("Password unexist!")
+		return fmt.Errorf("Validation error")
 	}
 	passwordFromFile := string(passwordBytes)
-
 	if insertedPassword != passwordFromFile {
-		return fmt.Errorf("Password unexist!")
+		return fmt.Errorf("Validation error: password unexist!")
 	}
 	return nil
 }
@@ -42,7 +31,7 @@ func reg() error {
 	fmt.Scanf("%s\n", &login)
 
 	var pass string
-	fmt.Println("Add you password\n> ")
+	fmt.Printf("Add you password\n> ")
 	fmt.Scanf("%s\n", &pass)
 
 	file, err := os.Create(login + ".txt")
@@ -63,9 +52,12 @@ func main() {
 	fmt.Scanf("%s\n", &choose)
 	switch choose {
 	case "login":
-		err := login()
-		if err != nil {
-			fmt.Println(err)
+		for {
+			err := login()
+			if err != nil {
+				fmt.Println(err)
+				continue
+			}
 			return
 		}
 
