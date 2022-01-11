@@ -3,13 +3,17 @@ package main
 import (
 	"database/sql"
 	"fmt"
-	"os"
 	"time"
 
 	_ "github.com/mattn/go-sqlite3"
 )
 
-func login() error {
+type user struct {
+	username string
+	password string
+}
+
+func login(db *sql.DB) error {
 	var insertedLogin string
 	fmt.Printf("Enter your login\n> ")
 	fmt.Scanf("%s\n", &insertedLogin)
@@ -18,14 +22,32 @@ func login() error {
 	fmt.Printf("Enter your password\n> ")
 	fmt.Scanf("%s\n", &insertedPassword)
 
-	passwordBytes, err := os.ReadFile(insertedLogin + ".txt")
+	// Connect to db.
+	db, err := sql.Open("sqlite3", "database.db")
 	if err != nil {
-		return fmt.Errorf("validation error")
+		return err
 	}
-	passwordFromFile := string(passwordBytes)
-	if insertedPassword != passwordFromFile {
-		return fmt.Errorf("validation error: password unexist")
+	err = db.Ping()
+	if err != nil {
+		return err
 	}
+	defer db.Close()
+
+	// Check if user whith this credintials exists.
+	rows, err := db.Query("SELECT username, password FROM users WHERE username = ? AND password = ?;", insertedLogin, insertedPassword)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+	user := user{}
+	for rows.Next() {
+		err := rows.Scan(&user.username, &user.password)
+		if err != nil {
+			return err
+		}
+	}
+	fmt.Printf("Hi: %s\nYour password: %s\nYou have successfully logged in.\n", user.username, user.password)
+
 	return nil
 }
 
@@ -70,7 +92,7 @@ func main() {
 	switch choose {
 	case "login":
 		for {
-			err := login()
+			err := login(db)
 			if err != nil {
 				fmt.Println(err)
 				continue
