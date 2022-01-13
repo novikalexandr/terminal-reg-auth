@@ -19,18 +19,18 @@ func main() {
 	}
 	defer db.Close()
 
-	var choose string
+	var userChoose string
 	fmt.Printf("Hi Men, do you want login or register?\n> ")
-	fmt.Scanf("%s\n", &choose)
-	switch choose {
+	fmt.Scanf("%s\n", &userChoose)
+	switch userChoose {
 	case "login":
-		for {
-			err := login.Login(db)
-			if err != nil {
+		for { //запуск бесконечного цикла
+			err := login.Login(db) // err = результату отработки Login()
+			if err != nil {        // если есть ошибка то мы выполняет то что нижу
 				fmt.Println(err)
-				continue
+				continue // запускает цикл заново
 			}
-			return
+			return //убивает main() если нет ошибки
 		}
 
 	case "register":
@@ -45,6 +45,6 @@ func main() {
 	case "exit":
 		return
 	default:
-		fmt.Println("Wrong choose!")
+		fmt.Printf("Wrong choose: \"%s\", expect [login, register, exit].\n", userChoose)
 	}
 }

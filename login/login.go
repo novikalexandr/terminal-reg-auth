@@ -15,8 +15,7 @@ func Login(db *sql.DB) error {
 	fmt.Printf("Enter your login\n> ")
 	fmt.Scanf("%s\n", &insertedLogin)
 	if insertedLogin == "" {
-		return fmt.Errorf("\nThe login field cannot be empty. Try entering the login again.\n")
-
+		return fmt.Errorf("login field cannot be empty. Enter login again")
 	}
 
 	var insertedPassword string
@@ -24,9 +23,8 @@ func Login(db *sql.DB) error {
 	fmt.Scanf("%s\n", &insertedPassword)
 	switch insertedPassword {
 	case "":
-		fmt.Printf("\nThe password field cannot be empty. Try entering the password again.\n")
-		Login(db)
-
+		err := fmt.Errorf("password field cannot be empty. Enter password again")
+		return err
 	}
 
 	// Connect to db.
@@ -40,20 +38,15 @@ func Login(db *sql.DB) error {
 	}
 	defer db.Close()
 
-	// Check if user whith this credintials exists.
-	rows, err := db.Query("SELECT username, password FROM users WHERE username = ? AND password = ?;", insertedLogin, insertedPassword)
-	if err != nil {
-		return err
-	}
-	defer rows.Close()
 	user := user{}
-	for rows.Next() {
-		err := rows.Scan(&user.username, &user.password)
-		if err != nil {
-			return err
-		}
-		fmt.Printf("Hi: %s\nYour password: %s\nYou have successfully logged in.\n", user.username, user.password)
+	// Check if user whith this credintials exists.
+	row := db.QueryRow("SELECT username, password FROM users WHERE username = ? AND password = ?;", insertedLogin, insertedPassword)
+	err = row.Scan(&user.username, &user.password)
+	if err != nil {
+		return err //TODO: Корректно возвращать ошибку
 	}
+
+	fmt.Printf("Hi: %s\nYour password: %s\nYou have successfully logged in.\n", user.username, user.password)
 
 	return nil
 }
